@@ -1,0 +1,48 @@
+# Full demo stack: PostgreSQL + a misbehaving fake CRM + the sync service.
+#   docker compose up                      # pulls the published images from GHCR
+#   ./scripts/build-images.sh && docker compose up   # or build them yourself first
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sync
+      POSTGRES_USER: sync
+      POSTGRES_PASSWORD: sync
+    ports:
+      - "55432:5432"   # non-default host port, to avoid clashing with a local PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sync -d sync"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  acme-crm-mock:
+    image: ghcr.io/abdullah204/acme-crm-mock:${TAG:-latest}
+    environment:
+      MOCK_API_KEY: demo-key
+      MOCK_CUSTOMERS: 250
+      MOCK_INVOICES: 600
+      MOCK_POISON_EVERY: 40          # some invoices are invalid, so they land in the dead-letter table
+      MOCK_FAILURE_RATE: 0.05        # 5% of requests get a random 500/502/503
+      MOCK_RATE_LIMIT_PER_SEC: 10    # beyond this: 429 + Retry-After
+      MOCK_ACTIVITY_SECONDS: 20      # keeps editing/creating records, so incremental runs have work
+    ports:
+      - "8081:8081"
+
+  reliable-sync:
+    image: ghcr.io/abdullah204/reliable-sync:${TAG:-latest}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      acme-crm-mock:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/sync
+      DB_USER: sync
+      DB_PASSWORD: sync
+      ACME_BASE_URL: http://acme-crm-mock:8081
+      ACME_API_KEY: demo-key
+      ACME_PAGE_SIZE: 100
+      SYNC_INTERVAL_SECONDS: 15
+      DLQ_MAX_ATTEMPTS: 3
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}   # optional: export a Slack/Teams webhook to get alerts
