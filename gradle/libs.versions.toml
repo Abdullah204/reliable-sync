@@ -1,0 +1,26 @@
+[versions]
+foundations = "0.1.0"
+jackson = "2.18.2"
+flyway = "11.1.0"
+junit = "5.11.4"
+testcontainers = "1.20.4"
+
+[libraries]
+foundations-sync = { module = "io.github.abdullah204.foundations:foundations-sync", version.ref = "foundations" }
+foundations-testing = { module = "io.github.abdullah204.foundations:foundations-testing", version.ref = "foundations" }
+postgresql = { module = "org.postgresql:postgresql", version = "42.7.4" }
+hikari = { module = "com.zaxxer:HikariCP", version = "6.2.1" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.16" }
+logback = { module = "ch.qos.logback:logback-classic", version = "1.5.12" }
+
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+assertj = { module = "org.assertj:assertj-core", version = "3.26.3" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter" }
